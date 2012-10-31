@@ -18,11 +18,11 @@ the results users have when publishing it. It brings to the web common editing f
 
 Rails 3.2:
 
-  gem "ckeditor", "3.7.3"
+  gem 'ckeditor', "3.7.3", :git => 'https://github.com/lafeber/ckeditor.git'
 
 Rails <= 3.0:
 
-  gem "ckeditor", "3.6.3"
+  gem 'ckeditor', "3.6.3", :git => 'https://github.com/lafeber/ckeditor.git'
 
 === Now generate models for store uploading files
 
