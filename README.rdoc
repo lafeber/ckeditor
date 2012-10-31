@@ -1,6 +1,8 @@
 = Ckeditor
 
-CKEditor is a text editor to be used inside web pages. It's a WYSIWYG editor, which means that the text being edited on it looks as similar as possible to 
+This is a fork of the Ckeditor gem. It allows for inline editing with Ckeditor 4 (beta)
+
+CKEditor is a text editor to be used inside web pages. It's a WYSIWYG editor, which means that the text being edited on it looks as similar as possible to
 the results users have when publishing it. It brings to the web common editing features found on desktop editing applications like Microsoft Word and OpenOffice.
 
 == Features
@@ -29,9 +31,9 @@ Rails <= 3.0:
 For active_record orm is used paperclip gem (it's by default).
 
   gem "paperclip"
-  
+
   rails generate ckeditor:install --orm=active_record --backend=paperclip
-  
+
 ==== ActiveRecord + carrierwave
 
   gem "carrierwave"
@@ -42,7 +44,7 @@ For active_record orm is used paperclip gem (it's by default).
 ==== Mongoid + paperclip
 
   gem 'mongoid-paperclip', :require => 'mongoid_paperclip'
-  
+
   rails generate ckeditor:install --orm=mongoid --backend=paperclip
 
 ==== Mongoid + carrierwave
@@ -78,7 +80,7 @@ Include ckeditor javascripts rails 3.2:
 
 or
 
-  <%= javascript_include_tag "ckeditor/init" %>  
+  <%= javascript_include_tag "ckeditor/init" %>
 
 
 Rails <= 3.0:
@@ -87,20 +89,34 @@ Rails <= 3.0:
 
 Form helpers:
 
-  cktext_area_tag("test_area", "Ckeditor is the best")
+Gone. Have a div with contenteditable="true". Click in the div and have the following code somewhere:
 
-  cktext_area_tag("content", "Ckeditor", :input_html => {:cols => 10, :rows => 20}, :toolbar => 'Easy')
-  
-* input_html - Options for text_area tag, others for ckeditor javascript configuration.
-* language - appends automatically, by default it's I18n.locale
-* available ckeditor options - http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.config.html
+    <script>
+    CKEDITOR.on( 'instanceCreated', function( event ) {
+      var editor = event.editor,
+        element = editor.element;
+
+      if ( element.is( 'h1', 'h2', 'h3' ) || element.getAttribute( 'id' ) == 'taglist' ) {
+        editor.on( 'configLoaded', function() {
+          editor.config.toolbarGroups = [
+            { name: 'editing',    groups: [ 'basicstyles', 'links' ] },
+            { name: 'undo' },
+            { name: 'clipboard',  groups: [ 'selection', 'clipboard' ] },
+            { name: 'about' }
+          ];
+        });
+      }
+    });
+    </script>
+
+NOTE: This can be improved, but for now I'm lazy :)
 
 In order to configure the ckeditor default options, create files:
 
   app/assets/javascripts/ckeditor/config.js
 
   app/assets/javascripts/ckeditor/contents.css
-  
+
 Here's a FormBuilder helper example:
 
   <%= form_for @page do |form| -%>
@@ -117,7 +133,7 @@ Here's a FormBuilder helper example:
 jQuery sample:
 
   <script type='text/javascript' charset='UTF-8'>
-    $(document).ready(function(){  
+    $(document).ready(function(){
       $('form[data-remote]').bind("ajax:before", function(){
         for (instance in CKEDITOR.instances){
           CKEDITOR.instances[instance].updateElement();
@@ -140,25 +156,25 @@ jQuery sample:
 For example, you need split assets collection for each user.
 
   class ApplicationController < ActionController::Base
-  
+
     protected
-      
+
       def ckeditor_filebrowser_scope(options = {})
         super({ :assetable_id => current_user.id, :assetable_type => 'User' }.merge(options))
       end
   end
-  
+
 If you want to filter only pictures or attachment_files - redefine methods "ckeditor_pictures_scope" or "ckeditor_attachment_files_scope" respectively.
 By default, both these methods call "ckeditor_filebrowser_scope" method:
 
   class ApplicationController < ActionController::Base
-  
+
     protected
 
       def ckeditor_pictures_scope(options = {})
         ckeditor_filebrowser_scope(options)
       end
-          
+
       def ckeditor_attachment_files_scope(options = {})
         ckeditor_filebrowser_scope(options)
       end
@@ -167,14 +183,14 @@ By default, both these methods call "ckeditor_filebrowser_scope" method:
 === Callbacks
 
   class ApplicationController < ActionController::Base
-  
+
     protected
-      
+
       # Cancan example
       def ckeditor_authenticate
         authorize! action_name, @asset
       end
-      
+
       # Set current_user as assetable
       def ckeditor_before_create_asset(asset)
         asset.assetable = current_user
@@ -183,7 +199,7 @@ By default, both these methods call "ckeditor_filebrowser_scope" method:
   end
 
 
-== I18n  
+== I18n
 
   en:
     ckeditor:
@@ -199,7 +215,7 @@ By default, both these methods call "ckeditor_filebrowser_scope" method:
   rake test
   rake test CKEDITOR_ORM=mongoid
   rake test CKEDITOR_BACKEND=carrierwave
-  
+
   rake test:controllers
   rake test:generators
   rake test:integration
